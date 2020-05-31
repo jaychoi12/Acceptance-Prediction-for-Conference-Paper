@@ -1,7 +1,9 @@
 from selenium import webdriver 
 from pyvirtualdisplay import Display
 from selenium.webdriver.common.keys import Keys
-
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 display = Display(visible=0, size=(1024, 768)) 
 display.start()
@@ -12,21 +14,15 @@ options.add_argument('disable-gpu')
 
 path = '/home/jaychoi/utils/chromedriver' 
 driver = webdriver.Chrome(path, options=options)
+wait = WebDriverWait(driver, 30)
 
-url = 'https://openreview.net/group?id=ICLR.cc/2020/Conference'
+url = 'https://openreview.net/group?id=ICLR.cc/2020/Conference#accept-poster'
 driver.get(url)
 
-tab = driver.find_element_by_xpath('//*[@id="notes"]/div/ul/li[3]/a')
-driver.execute_script("arguments[0].click();", tab)
+tab = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="accept-poster"]/ul')))
 
-
-driver.implicitly_wait(3)
-
-xpath = '//*[@id="accept-spotlight"]'
-#xpath = '//*[@id="accept-poster"]/ul/li[1]/h4/a[1]'
-#xpath = '//*[@id="accept-poster"]/ul/li[1]/h4/a[1]/text()'
-#xpath = '//*[@id="accept-poster"]/ul'
+xpath = '//*[@id="accept-poster"]/ul/li[2]/h4/a[1]'
 paper_title = driver.find_element_by_xpath(xpath)
 
-print(paper_title.getId())
+print(paper_title.text)
 driver.quit()
