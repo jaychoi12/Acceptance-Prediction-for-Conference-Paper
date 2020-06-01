@@ -17,31 +17,31 @@ options.add_argument('disable-gpu')
 path = '/home/jaychoi/utils/chromedriver'
 driver = webdriver.Chrome(path, options=options)
 #driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
-wait = WebDriverWait(driver, 60)
+wait = WebDriverWait(driver, 90)
 
-url = 'https://openreview.net/group?id=ICLR.cc/2020/Conference#accept-poster'
+url = 'https://openreview.net/group?id=ICLR.cc/2019/Conference#rejected-papers'
 driver.get(url)
 
-tab = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="accept-poster"]/ul')))
+tab = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="rejected-papers"]/ul')))
 
-with open('output_acceptposter.tsv', 'wt') as out_file:
+with open('output_2019.tsv', 'at') as out_file:
     tsv_writer = csv.writer(out_file, delimiter='\t')
-    tsv_writer.writerow(['title', 'accept', 'abstract', 'tldr', 'keyword', 'code'])
+    #tsv_writer.writerow(['title', 'accept', 'abstract', 'tldr', 'keyword', 'code'])
     
     #set_order = {'title':0, 'accept':1, 'abstract':2, 'tldr':3, 'keyword':4, 'code':5}
-    paperlist = '//*[@id="accept-poster"]/ul/li'
+    paperlist = '//*[@id="rejected-papers"]/ul/li'
     papernum = len(driver.find_elements_by_xpath(paperlist))
     for i in range(1,papernum+1):
         tsvrow = [None]*6
-        elementnum = len(driver.find_elements_by_xpath('//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li'%i))
+        elementnum = len(driver.find_elements_by_xpath('//*[@id="rejected-papers"]/ul/li[%d]/div[@class="collapse"]/div/ul/li'%i))
         for j in range(1,elementnum+1):
-            title_path = '//*[@id="accept-poster"]/ul/li[%d]/h4/a[1]'%i
+            title_path = '//*[@id="rejected-papers"]/ul/li[%d]/h4/a[1]'%i
             title = driver.find_element_by_xpath(title_path).get_attribute("textContent")
             tsvrow[0] = title
             
-            key_path = '//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/strong'%(i,j)
+            key_path = '//*[@id="rejected-papers"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/strong'%(i,j)
             key = driver.find_element_by_xpath(key_path).get_attribute("textContent")
-            content_path = '//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/span'%(i,j)
+            content_path = '//*[@id="rejected-papers"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/span'%(i,j)
             content = driver.find_element_by_xpath(content_path).get_attribute("textContent")
             if key == 'TL;DR:':
                 tsvrow[3] = content
@@ -53,8 +53,8 @@ with open('output_acceptposter.tsv', 'wt') as out_file:
                 tsvrow[5] = content
             else:
                 continue
-            tsvrow[1] = '1' #accept
-
+            #tsvrow[1] = '1' #accept
+            tsvrow[1] = '0' #rejected
         #have stacked elements for paper i
         #need to stack in the tsv file in order
         #print("stack ",unordered_stack)
