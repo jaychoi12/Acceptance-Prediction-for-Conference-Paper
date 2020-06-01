@@ -17,12 +17,12 @@ options.add_argument('disable-gpu')
 driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 wait = WebDriverWait(driver, 30)
 url = 'https://openreview.net/group?id=ICLR.cc/2020/Conference#accept-poster'
-driver.get(url)
 
 tab = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="accept-poster"]/ul')))
 
 xpath = '//*[@id="accept-poster"]/ul/li[2]/h4/a[1]'
 paper_title = driver.find_element_by_xpath(xpath)
+paper_title.get_attribute()
 
 print(paper_title.text)
 driver.quit()
