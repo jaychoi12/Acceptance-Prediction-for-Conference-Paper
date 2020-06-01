@@ -23,41 +23,43 @@ driver.get(url)
 
 tab = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="accept-poster"]/ul')))
 
-with open('/output_acceptposter.tsv', 'wt') as out_file:
+with open('output_acceptposter.tsv', 'wt') as out_file:
     tsv_writer = csv.writer(out_file, delimiter='\t')
     tsv_writer.writerow(['title', 'accept', 'abstract', 'tldr', 'keyword', 'code'])
     
-    set_order = {'title':0, 'accept':1, 'abstract':2, 'tldr':3, 'keyword':4, 'code':5}
+    #set_order = {'title':0, 'accept':1, 'abstract':2, 'tldr':3, 'keyword':4, 'code':5}
     paperlist = '//*[@id="accept-poster"]/ul/li'
     papernum = len(driver.find_elements_by_xpath(paperlist))
     for i in range(1,papernum+1):
-        unordered_stack = {}
+        tsvrow = [None]*6
         elementnum = len(driver.find_elements_by_xpath('//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li'%i))
         for j in range(1,elementnum+1):
             title_path = '//*[@id="accept-poster"]/ul/li[%d]/h4/a[1]'%i
             title = driver.find_element_by_xpath(title_path).get_attribute("textContent")
-            unordered_stack['title'] = title
+            tsvrow[0] = title
             
             key_path = '//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/strong'%(i,j)
             key = driver.find_element_by_xpath(key_path).get_attribute("textContent")
-            if key == 'TL;DR:':
-                key = 'tldr'
-            elif key == 'Abstract:':
-                key = 'abstract'
-            elif key == 'Keywords:':
-                key = 'keyword'
-            elif key == 'Code:':
-                key = 'code'
-            elif key == 'Original Pdf:':
-                continue
             content_path = '//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li[%d]/span'%(i,j)
             content = driver.find_element_by_xpath(content_path).get_attribute("textContent")
-            unordered_stack[key] = content
+            if key == 'TL;DR:':
+                tsvrow[3] = content
+            elif key == 'Abstract:':
+                tsvrow[2] = content
+            elif key == 'Keywords:':
+                tsvrow[4] = content
+            elif key == 'Code:':
+                tsvrow[5] = content
+            else:
+                continue
+            tsvrow[1] = '1' #accept
+
         #have stacked elements for paper i
         #need to stack in the tsv file in order
-        for key,content in unordered_stack.items():
-            tsvrow = [None]*6
-            tsvrow[setorder[key]] = content
+        #print("stack ",unordered_stack)
+        #for key,content in unordered_stack.items():
+
+        #print("row ",tsvrow)
         tsv_writer.writerow(tsvrow)
             
         
