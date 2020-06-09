@@ -30,10 +30,33 @@ with open('output_2017.tsv', 'wt') as out_file:
     '//*[@id="note_BkbY4psgg"]'
     paperlist = driver.find_elements_by_xpath('//*[@id="notes"]/div')
     papernum = len(paperlist)
+    parent_window = driver.current_window_handle
     for i in range(1,papernum+1):
         if len(driver.find_element_by_xpath('//*[@id="notes"]/div[%d]'%i).get_attribute("id")) < 5:
-            print('a')
-        ####### done so far
+            continue
+        ####### done so far #######
+        driver.execute_script("window.open('https://openreview.net/forum?id=BkbY4psgg')") # child window
+        all_windows =driver.window_handles
+        child_window = [window for window in all_windows if window != parent_window][0]
+        driver.switch_to.window(child_window)
+        wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="note_BkbY4psgg"]/div[1]')))
+        elementnum = len(driver.find_elements_by_xpath('//*[@id="note_BkbY4psgg"]/div'))
+        title_path = '//*[@id="note_BkbY4psgg"]/div[1]/h2/a[1]'
+        title = driver.find_element_by_xpath(title_path).text
+        print(elementnum)
+        print(title)
+        break
+        for j in range(1, elementnum+1):
+            continue
+
+
+        driver.close() # close child window
+        driver.switch_to.window(parent_window)
+        
+        
+driver.quit()     
+        
+'''        
         tsvrow = [None]*6
         elementnum = len(driver.find_elements_by_xpath('//*[@id="accept-poster"]/ul/li[%d]/div[@class="collapse"]/div/ul/li'%i))
         for j in range(1,elementnum+1):
@@ -67,3 +90,4 @@ with open('output_2017.tsv', 'wt') as out_file:
             
         
 driver.quit()
+'''
