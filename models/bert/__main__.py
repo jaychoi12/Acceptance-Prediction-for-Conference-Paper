@@ -3,7 +3,10 @@ import time
 
 import numpy as np
 import torch
-from transformers import AdamW, BertForSequenceClassification, BertTokenizer, WarmupLinearSchedule
+import torch.nn as nn
+import torch.autograd as autograd
+from transformers import AdamW, BertForSequenceClassification, BertTokenizer, WarmupLinearSchedule, BertPreTrainedModel, BertModel
+# from lstm import BertForClassificationWithLSTM
 
 from common.constants import *
 from common.evaluators.bert_evaluator import BertEvaluator
@@ -23,6 +26,73 @@ def evaluate_split(model, processor, tokenizer, args, split='dev'):
     accuracy, precision, recall, f1, avg_loss = evaluator.get_scores(silent=True)[0]
     print('\n' + LOG_HEADER)
     print(LOG_TEMPLATE.format(split.upper(), accuracy, precision, recall, f1, avg_loss))
+    
+    
+class BertForClassificationWithLSTM(BertPreTrainedModel):
+    """
+    BERT model for classification with LSTM.
+    This module is composed of the BERT model with a 
+    LSTM layer on top of the pooled output.
+    """
+    
+    def __init__(self, config, num_labels=2):
+        super(BertForClassificationWithLSTM, self).__init__(config)
+        self.num_labels = config.num_labels
+        self.hidden_dim = config.hidden_size
+        self.bert = BertModel(config)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.lstm = nn.LSTM(config.hidden_size, config.hidden_size, num_layers=1) # 수정 요망
+        self.classifier = nn.Linear(config.hidden_size, config.num_labels)
+        self.init_weights()
+    
+    def init_hidden(self, batch_size):
+        return (autograd.Variable(torch.randn(1, batch_size, self.hidden_dim).cuda()),
+                autograd.Variable(torch.randn(1, batch_size, self.hidden_dim)).cuda())
+    
+    
+#     @add_start_docstrings_to_callable(BERT_INPUTS_DOCSTRING.format("(batch_size, sequence_length)"))
+    def forward(self, input_ids=None, attention_mask=None, token_type_ids=None,
+                position_ids=None, head_mask=None, labels=None):
+        
+        # fine tuning 과정에서는 token_type_ids가 0 밖에 없기 때문에
+        # pre-trained된 BERT를 가지고 data-loader 선에서 sequence를 나누지 말고
+        # forward 선에서 나눠도 된다.
+        
+        outputs = []
+        seq_max_length = 64
+        max_iter = int(input_ids.shape[1] / seq_max_length) 
+        
+        for itr in range(max_iter):
+            outputs.append(self.bert(
+                input_ids[:, itr*seq_max_length : (itr+1)*seq_max_length],
+                attention_mask=attention_mask[:, itr*seq_max_length : (itr+1)*seq_max_length],
+                token_type_ids=token_type_ids[:, itr*seq_max_length : (itr+1)*seq_max_length],
+                position_ids=position_ids,
+                head_mask=head_mask,
+            )[1])
+#         print (len(outputs))
+#         print (outputs[0].shape)
+        
+        pooled_output = torch.stack(outputs, dim=0)
+#         print (outputs.shape)
+        
+        
+        
+#         outputs = self.bert(
+#             input_ids,
+#             attention_mask=attention_mask,
+#             token_type_ids=token_type_ids,
+#             position_ids=position_ids,
+#             head_mask=head_mask,
+#         )
+#         pooled_output = outputs[1] # batch_size * 768
+        
+        self.hidden = self.init_hidden(pooled_output.shape[1])
+        logits, (ht, ct) = self.lstm(pooled_output, self.hidden) # LSTM input shape : (seq_len, batch_size, input_size)
+        logits = self.dropout(logits)
+        logits = self.classifier(logits)
+        
+        return logits
 
 
 if __name__ == '__main__':
@@ -82,7 +152,8 @@ if __name__ == '__main__':
             len(train_examples) / args.batch_size / args.gradient_accumulation_steps) * args.epochs
 
     pretrained_model_path = args.model if os.path.isfile(args.model) else PRETRAINED_MODEL_ARCHIVE_MAP[args.model]
-    model = BertForSequenceClassification.from_pretrained(pretrained_model_path, num_labels=args.num_labels)
+#     model = BertForSequenceClassification.from_pretrained(pretrained_model_path, num_labels=args.num_labels)
+    model = BertForClassificationWithLSTM.from_pretrained(pretrained_model_path, num_labels=args.num_labels)
 
     if args.fp16:
         model.half()
