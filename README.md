@@ -11,8 +11,11 @@ BERT is used as baseline model. From this, we make variation with LSTM as a clas
 In this project, the descriptiond about components are as follows.
 
 (dir) data-processing : files to crawl ICLR paper data from openreview (https://openreview.net/) and generate meta-data from crawled data
+
 (dir) hedwig-master/hedwig-baseline : used BERT model for the experiments
+
 (dir) hedwig-master/hedwig-LSTM : used BERT + LSTM layers
+
 (dir) hedwig-master/hedwig-data : Dataset used for the experiments. To run this project, you have to download IMDB, Yelp dataset and bert-pretrained mdoel in this directory
 
 Experimental results in detail
