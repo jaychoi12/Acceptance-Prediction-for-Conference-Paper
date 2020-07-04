@@ -1,1 +1,1 @@
-CUDA_VISIBLE_DEVICES=1 python -m models.bert --dataset AAPD --model bert-base-uncased --max-seq-length 128 --batch-size 16 --lr 2e-5 --epochs 10
+CUDA_VISIBLE_DEVICES=1 python -m models.bert --dataset ICLR --model bert-base-uncased --max-seq-length 128 --batch-size 16 --lr 2e-5 --epochs 10

@@ -3,22 +3,22 @@ import os
 from datasets.bert_processors.abstract_processor import BertProcessor, InputExample
 
 
-class AAPDProcessor(BertProcessor):
-    NAME = 'AAPD'
+class ICLRProcessor(BertProcessor):
+    NAME = 'ICLR'
     NUM_CLASSES = 2
     IS_MULTILABEL = False
 
     def get_train_examples(self, data_dir):
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir,'AAPD', 'train.tsv')), 'train')
+            self._read_tsv(os.path.join(data_dir,'ICLR', 'train.tsv')), 'train')
 
     def get_dev_examples(self, data_dir):
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, 'AAPD', 'dev.tsv')), 'dev')
+            self._read_tsv(os.path.join(data_dir, 'ICLR', 'dev.tsv')), 'dev')
 
     def get_test_examples(self, data_dir):
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, 'AAPD', 'test.tsv')), 'test')
+            self._read_tsv(os.path.join(data_dir, 'ICLR', 'test.tsv')), 'test')
 
     def _create_examples(self, lines, set_type):
         examples = []

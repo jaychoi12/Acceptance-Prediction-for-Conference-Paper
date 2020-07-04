@@ -11,13 +11,14 @@ from transformers import AdamW, BertForSequenceClassification, BertTokenizer, Wa
 from common.constants import *
 from common.evaluators.bert_evaluator import BertEvaluator
 from common.trainers.bert_trainer import BertTrainer
-from datasets.bert_processors.aapd_processor import AAPDProcessor
+# from datasets.bert_processors.aapd_processor import AAPDProcessor
 from datasets.bert_processors.agnews_processor import AGNewsProcessor
 from datasets.bert_processors.imdb_processor import IMDBProcessor
 from datasets.bert_processors.reuters_processor import ReutersProcessor
 from datasets.bert_processors.sogou_processor import SogouProcessor
 from datasets.bert_processors.sst_processor import SST2Processor
 from datasets.bert_processors.yelp2014_processor import Yelp2014Processor
+from datasets.bert_processors.iclr_processor import ICLRProcessor
 from models.bert.args import get_args
 
 
@@ -64,8 +65,6 @@ class BertForClassificationWithLSTM(BertPreTrainedModel):
         std = torch.tensor([2.76, 47.26, 1.97, 1.42, 10.33, 0.39]).unsqueeze(0).cuda()
         
         x = 0.1 * (x - mean) / std 
-        
-        
         return x
          
 #     @add_start_docstrings_to_callable(BERT_INPUTS_DOCSTRING.format("(batch_size, sequence_length)"))
@@ -77,7 +76,7 @@ class BertForClassificationWithLSTM(BertPreTrainedModel):
         # forward 선에서 나눠도 된다.
         
         outputs = []
-        seq_max_length = 64 # Change this part!
+        seq_max_length = 16 # Change this part!
         max_iter = int(input_ids.shape[1] / seq_max_length)
         
         for itr in range(max_iter):
@@ -96,8 +95,6 @@ class BertForClassificationWithLSTM(BertPreTrainedModel):
         self.hidden = self.init_hidden(pooled_output.shape[1])
         logits, (ht, ct) = self.lstm(pooled_output, self.hidden) # LSTM input shape : (seq_len, batch_size, input_size)
         logits = self.dropout(logits[-1])
-#         logits = self.relu(self.linear1(logits))
-        
         logits = self.tanh(self.linear1(logits))
         
         if meta_data is not None:
@@ -132,7 +129,7 @@ if __name__ == '__main__':
         'SST-2': SST2Processor,
         'Reuters': ReutersProcessor,
         'IMDB': IMDBProcessor,
-        'AAPD': AAPDProcessor,
+        'ICLR': ICLRProcessor,
         'AGNews': AGNewsProcessor,
         'Yelp2014': Yelp2014Processor,
         'Sogou': SogouProcessor
