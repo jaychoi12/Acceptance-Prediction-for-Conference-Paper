@@ -1,4 +1,9 @@
 *.log
 .DS_Store
 model_checkpoints
+hedwig-master/hedwig-data/embeddings/
+hedwig-master/hedwig-data/datasets/IMDB/
+hedwig-master/hedwig-data/datasets/Reuters/
+hedwig-master/hedwig-data/datasets/Yelp2014/
+hedwig-master/hedwig-data/models/
 
